@@ -4,10 +4,10 @@ using System.Text;
 
 namespace WeatherForecastLoader.DataModel
 {
-    internal class Wind
+    public class Wind
     {
-        internal int MinSpeed { get; set; }
-        internal int MaxSpeed { get; set; }
-        internal string Direction { get; set; }
+        public int[] AvgSpeed { get; set; }
+        public int[] GustSpeed { get; set; }
+        public string[] Direction { get; set; }
     }
 }

@@ -4,17 +4,19 @@ using System.Text;
 
 namespace WeatherForecastLoader.DataModel
 {
-    internal class Weather
+    public class Weather
     {
-        internal int Tempreture_min { get; set; }
-        internal int Tempreture_max { get; set; }
-        internal int Pressure_min { get; set; }
-        internal int Pressure_max { get; set; }
-        internal int Humidity { get; set; }
-        internal int Radiation { get; set; }
-        internal int Geomagnetic { get; set; }
-        internal string Cloudiness { get; set; }
-        internal Wind Wind { get; set; }
-        internal string Precipitation { get; set; }
+        // TODO : переделать без массивов
+        public DateTime Date { get; set; }
+        public int[] Tempreture_min { get; set; }
+        public int[] Tempreture_max { get; set; }
+        public int[] PressureMin { get; set; }
+        public int[] PressureMax { get; set; }
+        public int[] Humidity { get; set; }
+        public int[] Radiation { get; set; }
+        public int[] Geomagnetic { get; set; }
+        public string[] Cloudiness { get; set; }
+        public Wind Wind { get; set; } = new Wind();
+        public double[] Precipitation { get; set; }
     }
 }

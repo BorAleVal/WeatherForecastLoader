@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using MongoDB.Driver;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -13,15 +14,23 @@ namespace WeatherForecastLoader
         // From Web
         private string url = "https://www.gismeteo.ru/";
         private HtmlWeb web = new HtmlWeb();
-        private static Logger logger = LogManager.GetCurrentClassLogger();
         private const string POPULAR_CITIES_NODE_CLASS = "cities-popular";
         private const string LIST_NODE_CLASS = "list";
         private const string LINK_NODE_CLASS = "link";
 
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static IMongoClient client;
+        private static IMongoDatabase database;
+        private static IMongoCollection<CityWeather> collection;
         public Parser()
         {
             try
             {
+                client = new MongoClient("mongodb://localhost:27017");
+                database = client.GetDatabase("WeatherForecastDB");
+                collection = database.GetCollection<CityWeather>("CityWeather");
+
                 var doc = web.Load(url);
 
                 var popularCityNode = doc
@@ -50,17 +59,21 @@ namespace WeatherForecastLoader
                     .Select(x => x.ChildNodes.FirstOrDefault(y => y.Attributes["class"]?.Value == LINK_NODE_CLASS && y.Attributes["href"] != null))
                     .Where(x => x != null)
                     .ToList();
-                var a = cityList.Select(x => new CityWeatherParser(x.InnerText, url + x.Attributes["href"].Value));
-                //foreach (HtmlNode node in cityList)
-                //{
-                //    new CityWeather(node.InnerText, url + node.Attributes["href"].Value);
-                //}
-                var b = a.FirstOrDefault().CityName;
+                var CityWeathers = cityList.Select(x => new CityWeather(x.InnerText, url + x.Attributes["href"].Value));
+
+                // Каждый раз будем очищать перед заполнением
+                collection.DeleteMany((new FilterDefinitionBuilder<CityWeather>()).Empty);
+                collection.InsertMany(CityWeathers);
+
                 logger.Info("Данные получены.");
             }
             catch (Exception ex)
             {
+#if DEBUG
+                Console.Write(ex);
+#else
                 logger.Error(ex);
+#endif
             }
         }
     }
