@@ -14,6 +14,7 @@ namespace WeatherForecastLoader
     public class CityWeather
     {
         public string CityName { get; set; }
+        public DateTime Date { get; set; }
         public Weather Weather { get; set; } = new Weather();
         [MongoDB.Bson.Serialization.Attributes.BsonId]
         public ObjectId? id { get { return ObjectId.GenerateNewId(); } set { } }
@@ -82,7 +83,7 @@ namespace WeatherForecastLoader
                 .First(x => x.Attributes["class"].Value.ContainsMatch("widget-row-geomagnetic", StringComparison.InvariantCultureIgnoreCase))
                 .Descendants("div")
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("item", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.InnerText))
+                .Select(x => int.Parse(x.InnerText.Replace("-", "0")))
                 .ToArray();
         }
 
@@ -104,7 +105,7 @@ namespace WeatherForecastLoader
                 .First(x => x.Attributes["class"].Value.ContainsMatch("widget-row-radiation", StringComparison.InvariantCultureIgnoreCase))
                 .Descendants("div")
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("row-item", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.InnerText))
+                .Select(x => int.Parse(x.InnerText.Replace("-", "0")))
                 .ToArray();
         }
 
@@ -117,17 +118,17 @@ namespace WeatherForecastLoader
                 .First(x => x.Attributes["class"].Value.Equals("date", StringComparison.InvariantCultureIgnoreCase))
                 .InnerText);
 
-            Weather.Date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            Date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
 
             Weather.Cloudiness = divNodes
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("weather-icon", StringComparison.InvariantCultureIgnoreCase))
                 .Select(x => x.Attributes["data-text"].Value)
                 .ToArray();
-            Weather.Tempreture_max = divNodes
+            Weather.TempretureMax = divNodes
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("maxt", StringComparison.InvariantCultureIgnoreCase))
                 .Select(x => int.Parse(x.FirstChild.InnerText.Replace(@"&minus;", "-")))
                 .ToArray();
-            Weather.Tempreture_min = divNodes
+            Weather.TempretureMin = divNodes
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("mint", StringComparison.InvariantCultureIgnoreCase))
                 .Select(x => int.Parse(x.FirstChild.InnerText.Replace(@"&minus;", "-")))
                 .ToArray();

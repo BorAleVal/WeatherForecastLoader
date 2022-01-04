@@ -7,9 +7,8 @@ namespace WeatherForecastLoader.DataModel
     public class Weather
     {
         // TODO : переделать без массивов
-        public DateTime Date { get; set; }
-        public int[] Tempreture_min { get; set; }
-        public int[] Tempreture_max { get; set; }
+        public int[] TempretureMin { get; set; }
+        public int[] TempretureMax { get; set; }
         public int[] PressureMin { get; set; }
         public int[] PressureMax { get; set; }
         public int[] Humidity { get; set; }
