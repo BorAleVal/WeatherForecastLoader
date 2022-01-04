@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 using WeatherForecastLoader.DataModel;
 using WeatherForecastLoader.Extentions;
 
@@ -15,7 +16,7 @@ namespace WeatherForecastLoader
     {
         public string CityName { get; set; }
         public DateTime Date { get; set; }
-        public Weather Weather { get; set; } = new Weather();
+        public Weather[] WeatherForecast { get; set; }
         [MongoDB.Bson.Serialization.Attributes.BsonId]
         public ObjectId? id { get { return ObjectId.GenerateNewId(); } set { } }
 
@@ -78,35 +79,32 @@ namespace WeatherForecastLoader
 
         private void CompleteGeomagnetic(HtmlNode node)
         {
-            Weather.Geomagnetic = node
-                .Descendants("div")
-                .First(x => x.Attributes["class"].Value.ContainsMatch("widget-row-geomagnetic", StringComparison.InvariantCultureIgnoreCase))
-                .Descendants("div")
-                .Where(x => x.Attributes["class"].Value.ContainsMatch("item", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.InnerText.Replace("-", "0")))
-                .ToArray();
+            node
+            .Descendants("div")
+            .First(x => x.Attributes["class"].Value.ContainsMatch("widget-row-geomagnetic", StringComparison.InvariantCultureIgnoreCase))
+            .Descendants("div")
+            .Where(x => x.Attributes["class"].Value.ContainsMatch("item", StringComparison.InvariantCultureIgnoreCase))
+            .Select((x, index) => WeatherForecast[index].Geomagnetic = int.Parse(x.InnerText.Replace("-", "0")));
         }
 
         private void CompleteHumidity(HtmlNode node)
         {
-            Weather.Humidity = node
-                .Descendants("div")
-                .First(x => x.Attributes["class"].Value.ContainsMatch("widget-row-humidity", StringComparison.InvariantCultureIgnoreCase))
-                .ChildNodes
-                .Where(x => x.Attributes["class"].Value.ContainsMatch("row-item", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.InnerText))
-                .ToArray();
+            node
+            .Descendants("div")
+            .First(x => x.Attributes["class"].Value.ContainsMatch("widget-row-humidity", StringComparison.InvariantCultureIgnoreCase))
+            .ChildNodes
+            .Where(x => x.Attributes["class"].Value.ContainsMatch("row-item", StringComparison.InvariantCultureIgnoreCase))
+            .Select((x, index) => WeatherForecast[index].Humidity = int.Parse(x.InnerText));
         }
 
         private void CompleteRadiation(HtmlNode node)
         {
-            Weather.Radiation = node
-                .Descendants("div")
-                .First(x => x.Attributes["class"].Value.ContainsMatch("widget-row-radiation", StringComparison.InvariantCultureIgnoreCase))
-                .Descendants("div")
-                .Where(x => x.Attributes["class"].Value.ContainsMatch("row-item", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.InnerText.Replace("-", "0")))
-                .ToArray();
+            node
+            .Descendants("div")
+            .First(x => x.Attributes["class"].Value.ContainsMatch("widget-row-radiation", StringComparison.InvariantCultureIgnoreCase))
+            .Descendants("div")
+            .Where(x => x.Attributes["class"].Value.ContainsMatch("row-item", StringComparison.InvariantCultureIgnoreCase))
+            .Select((x, index) => WeatherForecast[index].Radiation = int.Parse(x.InnerText.Replace("-", "0")));
         }
 
         private void CompleteWeather(HtmlNode node)
@@ -120,23 +118,18 @@ namespace WeatherForecastLoader
 
             Date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
 
-            Weather.Cloudiness = divNodes
+            divNodes
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("weather-icon", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => x.Attributes["data-text"].Value)
-                .ToArray();
-            Weather.TempretureMax = divNodes
+                .Select((x, index) => WeatherForecast[index].Cloudiness = x.Attributes["data-text"].Value);
+            divNodes
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("maxt", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.FirstChild.InnerText.Replace(@"&minus;", "-")))
-                .ToArray();
-            Weather.TempretureMin = divNodes
+                .Select((x, index) => WeatherForecast[index].TempretureMax = int.Parse(x.FirstChild.InnerText.Replace(@"&minus;", "-")));
+            divNodes
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("mint", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.FirstChild.InnerText.Replace(@"&minus;", "-")))
-                .ToArray();
-
-            Weather.Precipitation = divNodes
+                .Select((x, index) => WeatherForecast[index].TempretureMin = int.Parse(x.FirstChild.InnerText.Replace(@"&minus;", "-")));
+            divNodes
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("item-unit", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => double.Parse(x.InnerText))
-                .ToArray();
+                .Select((x, index) => WeatherForecast[index].Precipitation = double.Parse(x.InnerText));
             // TODO : выяснить как быстрее найти строку и в ней искать объекты или сразу по всем divNodes
         }
 
@@ -144,42 +137,37 @@ namespace WeatherForecastLoader
         {
             var divNodes = node.Descendants("div");
 
-            Weather.Wind.AvgSpeed = divNodes
+            divNodes
                 .First(x => x.Attributes["class"].Value.ContainsMatch("widget-row-wind-speed", StringComparison.InvariantCultureIgnoreCase))
                 .Descendants("span")
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("unit_wind_m_s", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.InnerText))
-                .ToArray();
+                .Select((x, index) => WeatherForecast[index].Wind.AvgSpeed = int.Parse(x.InnerText));
 
             // TODO : как-то нужно обрабатывать случай когда попадается <span>-</span>
-            Weather.Wind.GustSpeed = divNodes
+            divNodes
                 .First(x => x.Attributes["class"] != null && x.Attributes["class"].Value.ContainsMatch("widget-row-wind-gust", StringComparison.InvariantCultureIgnoreCase))
                 .Descendants("span")
                 .Where(x => x.Attributes["class"] != null
                 && x.Attributes["class"].Value.ContainsMatch("unit_wind_m_s", StringComparison.InvariantCultureIgnoreCase)
                 && x.Attributes["class"].Value.ContainsMatch("wind-unit", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.InnerText))
-                .ToArray();
+                .Select((x, index) => WeatherForecast[index].Wind.GustSpeed = int.Parse(x.InnerText));
 
-            Weather.Wind.Direction = divNodes
+            divNodes
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("direction", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => x.InnerText)
-                .ToArray();
+                .Select((x, index) => WeatherForecast[index].Wind.Direction = x.InnerText);
         }
 
         private void CompletePressure(HtmlNode node)
         {
             var divNodes = node.Descendants("div");
 
-            Weather.PressureMax = divNodes
+            divNodes
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("maxt", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.FirstChild.InnerText))
-                .ToArray();
+                .Select((x, index) => WeatherForecast[index].PressureMax = int.Parse(x.FirstChild.InnerText));
 
-            Weather.PressureMin = divNodes
+            divNodes
                 .Where(x => x.Attributes["class"].Value.ContainsMatch("mint", StringComparison.InvariantCultureIgnoreCase))
-                .Select(x => int.Parse(x.FirstChild.InnerText))
-                .ToArray();
+                .Select((x, index) => WeatherForecast[index].PressureMin = int.Parse(x.FirstChild.InnerText));
         }
     }
 }
