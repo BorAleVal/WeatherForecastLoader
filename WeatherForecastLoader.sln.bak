@@ -5,7 +5,7 @@ VisualStudioVersion = 17.1.31911.260
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WeatherForecastLoader", "WeatherForecastLoader.csproj", "{900E7D25-5977-4458-960F-B78E26E9289B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WeatherForecastModels", "..\WeatherForecastWebAPI\WeatherModel\WeatherForecastModels.csproj", "{57F5E54B-523A-4AF9-BA3A-9EB903A878FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WeatherForecastModels", "..\WeatherModel\WeatherForecastModels.csproj", "{57F5E54B-523A-4AF9-BA3A-9EB903A878FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
