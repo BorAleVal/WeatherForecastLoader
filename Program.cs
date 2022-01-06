@@ -6,8 +6,7 @@ namespace WeatherForecastLoader
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            var parser = new Parser();
+            Parser.ParseWeatherForecast();
         }
     }
 }
